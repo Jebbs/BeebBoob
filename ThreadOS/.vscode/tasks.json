@@ -1,0 +1,18 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "Compile Java",
+            "type": "shell",
+            "command": "javac -g Shell.java",
+            // this needs to happen somewhere
+            // java -agentlib:jdwp=transport=dt_socket,server=y,address=2121 Boot
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
