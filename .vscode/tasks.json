@@ -6,7 +6,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "javac -cp ./ThreadOS ./src/*java",
+            "command": "javac -d ./ThreadOS ./src/*java",
             "group": {
                 "kind": "build",
                 "isDefault": true
