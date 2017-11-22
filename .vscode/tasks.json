@@ -6,7 +6,8 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "javac -d ./ThreadOS ./src/*java",
+            "command": "javac -g -d ./ThreadOS -cp ./ThreadOS ./src/*java",
+            //java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=2121 Boot
             "group": {
                 "kind": "build",
                 "isDefault": true
