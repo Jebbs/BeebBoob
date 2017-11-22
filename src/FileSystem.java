@@ -2,8 +2,9 @@ public class FileSystem{
     private SuperBlock superBlock;
     private Directory directory;
     private FileTable fileTable;
+    private Scheduler scheduler;//this is to have access to the TCB's
 
-    public FileSystem(int diskBlocks)
+    public FileSystem(int diskBlocks, Scheduler sched)
     {
         superBlock = new SuperBlock(diskBlocks);
 
@@ -12,6 +13,8 @@ public class FileSystem{
         directory = new Directory(superBlock.totalInodes);
 
         fileTable = new FileTable(directory);
+
+        scheduler = sched;
 
         //directory reconstruction?
         FileTableEntry dirEntry = open("/","r");
