@@ -1,4 +1,6 @@
 public class FileSystem{
+    private static final int inodesPerBlock = 16;
+
     private SuperBlock superBlock;
     private Directory directory;
     private FileTable fileTable;
@@ -8,7 +10,8 @@ public class FileSystem{
     {
         superBlock = new SuperBlock(diskBlocks);
 
-        //detect if we have an unformated disk?
+        if(SuperBlock.totalInodes  == 0)
+            format(64);
 
         directory = new Directory(superBlock.totalInodes);
 
@@ -33,7 +36,14 @@ public class FileSystem{
      * format the disk such that there are n files allowed in the system.
      */
     boolean format(int files){
-        return false;
+        //clear free spots in super block
+        superBlock.totalInodes = files;
+
+        //get an array of bytes for a block of blank inodes
+
+        //rewrite the inode blocks
+
+        return true;
     }
 
     /**
