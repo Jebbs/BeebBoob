@@ -18,18 +18,32 @@ public class SuperBlock {
 
     public boolean getFreeList(int i)
     {
+        if(i < 0 || i >= 1000)
+            return false;
+
         byte x = 1 << (p & 7);
         return (freeList[i / 8] & x) == x;
     }
 
     public void setFreeList(int i, boolean b)
     {
+        if(i < 0 || i >= 1000)
+            return;
+
         byte x = 1 << (p & 7);
 
         if(b)
             freeList[i / 8] |= x;
         else
             freeList[i / 8] &= ~x;
+    }
+
+    public void clearFreeList()
+    {
+        for(int i = 0; i < 125; ++i)
+            freeList[i] = 0;
+
+        setFreeList(0, true);
     }
 
     public void sync()
