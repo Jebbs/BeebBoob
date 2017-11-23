@@ -46,6 +46,17 @@ public class SuperBlock {
         setFreeList(0, true);
     }
 
+    public int findFirstFreeBlock()
+    {
+        for(int i = 0; i < 125; ++i)
+            if(freeList[i] != 255)
+                for(int j = i * 8; j < i * 8 + 8; ++j)
+                    if(!getFreeList(j))
+                        return j;
+
+        return -1;
+    }
+
     public void sync()
     {
         byte[] block = new byte[Disk.blockSize];
