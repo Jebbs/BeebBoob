@@ -51,7 +51,7 @@ public class SuperBlock
     {
         for(short i = 0; i < 32; ++i) {
             if(freeList[i] != 0xFFFFFFFF) {
-                short j = i * (short)32;
+                short j = (short)(i << 5);
                 for(short k = j; k < (j>968?1000:j+32); ++k)
                     if(!getFreeList(k))
                         return k;
