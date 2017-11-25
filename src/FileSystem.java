@@ -1,5 +1,5 @@
 public class FileSystem{
-    private static final int inodesPerBlock = 16;
+    private static int inodesPerBlock;
 
     private SuperBlock superBlock;
     private Directory directory;
@@ -8,10 +8,11 @@ public class FileSystem{
 
     public FileSystem(int diskBlocks, Scheduler sched)
     {
+        inodesPerBlock = Disk.blockSize/Inode.iNodeSize;
         superBlock = new SuperBlock(diskBlocks);
 
-        if(SuperBlock.totalInodes  == 0)
-            format(64);
+        if(superBlock.totalInodes  == 0)
+            format(72);
 
         directory = new Directory(superBlock.totalInodes);
 
@@ -36,12 +37,21 @@ public class FileSystem{
      * format the disk such that there are n files allowed in the system.
      */
     boolean format(int files){
-        //clear free spots in super block
+        superBlock.clearFreeList();
         superBlock.totalInodes = files;
 
         //get an array of bytes for a block of blank inodes
+        byte[] inodeBlock = new byte[Disk.blockSize];
+        Inode blankInode = new Inode();
+        for(int i = 0; i < inodesPerBlock; i++)
+            Inode.inodeToBytes(blankInode, inodeBlock, i*Inode.iNodeSize);
 
         //rewrite the inode blocks
+        for(int i = files, j = 0; i > 0; i-= inodesPerBlock, j=0)
+        {
+            //get next free block (though it will be early)
+            SysLib.rawwrite(i, inodeBlock);
+        }
 
         return true;
     }
