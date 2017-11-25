@@ -1,7 +1,7 @@
 public class SuperBlock {
     public int totalBlocks;
     public int totalInodes;
-    public byte freeList[];
+    public int freeList[];
 
     public SuperBlock(int diskSize)
     {
@@ -11,9 +11,9 @@ public class SuperBlock {
         totalBlocks = SysLib.bytes2int(block, 0);
         totalInodes = SysLib.bytes2int(block, 4);
 
-        freeList = new byte[125];
-        for(int i = 0; i < 125; ++i)
-            freeList[i] = block[i + 8];
+        freeList = new int[32];
+        for(int i = 0; i < 32; ++i)
+            freeList[i] = SysLib.bytes2int(block, 8 + 4 * i);
     }
 
     public boolean getFreeList(int i)
@@ -21,8 +21,8 @@ public class SuperBlock {
         if(i < 0 || i >= 1000)
             return false;
 
-        byte x = 1 << (p & 7);
-        return (freeList[i / 8] & x) == x;
+        int x = 1 << (i & 31);
+        return (freeList[i / 32] & x) == x;
     }
 
     public void setFreeList(int i, boolean b)
@@ -30,17 +30,17 @@ public class SuperBlock {
         if(i < 0 || i >= 1000)
             return;
 
-        byte x = 1 << (p & 7);
+        int x = 1 << (i & 31);
 
         if(b)
-            freeList[i / 8] |= x;
+            freeList[i / 32] |= x;
         else
-            freeList[i / 8] &= ~x;
+            freeList[i / 32] &= ~x;
     }
 
     public void clearFreeList()
     {
-        for(int i = 0; i < 125; ++i)
+        for(int i = 0; i < 32; ++i)
             freeList[i] = 0;
 
         setFreeList(0, true);
@@ -48,11 +48,14 @@ public class SuperBlock {
 
     public int findFirstFreeBlock()
     {
-        for(int i = 0; i < 125; ++i)
-            if(freeList[i] != 255)
-                for(int j = i * 8; j < i * 8 + 8; ++j)
-                    if(!getFreeList(j))
-                        return j;
+        for(int i = 0; i < 32; ++i) {
+            if(freeList[i] != 0xFFFFFFFF) {
+                int j = i * 32;
+                for(int k = j; k < (j>968?1000:j+32); ++k)
+                    if(!getFreeList(k))
+                        return k;
+            }
+        }
 
         return -1;
     }
@@ -63,8 +66,8 @@ public class SuperBlock {
         SysLib.int2bytes(totalBlocks, block, 0);
         SysLib.int2bytes(totalInodes, block, 4);
 
-        for(int i = 0; i < 125; ++i)
-            block[i + 8] = freeList[i];
+        for(int i = 0; i < 32; ++i)
+            SysLib.int2bytes(freeList[i], block, 8 + 4 * i);
 
         SysLib.rawwrite(0, block);
     }
