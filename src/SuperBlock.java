@@ -1,7 +1,8 @@
-public class SuperBlock {
+public class SuperBlock
+{
     public int totalBlocks;
     public int totalInodes;
-    public int freeList[];
+    private int freeList[];
 
     public SuperBlock(int diskSize)
     {
@@ -43,7 +44,7 @@ public class SuperBlock {
         for(short i = 0; i < 32; ++i)
             freeList[i] = 0;
 
-        setFreeList(0, true);
+        setFreeList((short)0, true);
     }
 
     public short findFirstFreeBlock()

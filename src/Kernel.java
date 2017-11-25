@@ -1,14 +1,11 @@
-/*
-* This is the same file as Kernel_org.java
-*/
 import java.io.BufferedReader;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class Kernel {
+public class Kernel
+{
     // Interrupt requests
     public final static int INTERRUPT_SOFTWARE = 1; // System calls
     public final static int INTERRUPT_DISK = 2; // Disk interrupts
@@ -68,11 +65,12 @@ public class Kernel {
         new BufferedReader(new InputStreamReader(System.in));
 
     // The heart of Kernel
-    public static int interrupt(int irq, int cmd, int param, Object args) {
+    public static int interrupt(int irq, int cmd, int param, Object args)
+    {
         TCB myTcb;
-        switch (irq) {
+        switch(irq) {
         case INTERRUPT_SOFTWARE: // System calls
-            switch (cmd) {
+            switch(cmd) {
             case BOOT:
                 // instantiate and start a scheduler
                 scheduler = new Scheduler();
@@ -96,17 +94,17 @@ public class Kernel {
             case EXEC:
                 return sysExec((String[]) args);
             case WAIT:
-                if ((myTcb = scheduler.getMyTcb()) != null) {
+                if((myTcb = scheduler.getMyTcb()) != null) {
                     int myTid = myTcb.getTid(); // get my thread ID
                     return waitQueue.enqueueAndSleep(myTid); //wait on my tid
                     // woken up by my child thread
                 }
                 return ERROR;
             case EXIT:
-                if ((myTcb = scheduler.getMyTcb()) != null) {
+                if((myTcb = scheduler.getMyTcb()) != null) {
                     int myPid = myTcb.getPid(); // get my parent ID
                     int myTid = myTcb.getTid(); // get my ID
-                    if (myPid != -1) {
+                    if(myPid != -1) {
                         // wake up a thread waiting on my parent ID
                         waitQueue.dequeueAndWakeup(myPid, myTid);
                         // I'm terminated!
@@ -119,9 +117,9 @@ public class Kernel {
                 scheduler.sleepThread(param); // param = milliseconds
                 return OK;
             case RAWREAD: // read a block of data from disk
-                while (disk.read(param, (byte[]) args) == false)
+                while(disk.read(param, (byte[])args) == false)
                     ioQueue.enqueueAndSleep(COND_DISK_REQ);
-                while (disk.testAndResetReady() == false)
+                while(disk.testAndResetReady() == false)
                     ioQueue.enqueueAndSleep(COND_DISK_FIN);
 
                 /*
@@ -136,9 +134,9 @@ public class Kernel {
                 // now you can access data in buffer
                 return OK;
             case RAWWRITE: // write a block of data to disk
-                while (disk.write(param, (byte[]) args) == false)
+                while(disk.write(param, (byte[])args) == false)
                     ioQueue.enqueueAndSleep(COND_DISK_REQ);
-                while (disk.testAndResetReady() == false)
+                while(disk.testAndResetReady() == false)
                     ioQueue.enqueueAndSleep(COND_DISK_FIN);
                 /*
                  * it's possible that a thread waiting to make a request was
@@ -149,9 +147,9 @@ public class Kernel {
 
                 return OK;
             case SYNC: // synchronize disk data to a real file
-                while (disk.sync() == false)
+                while(disk.sync() == false)
                     ioQueue.enqueueAndSleep(COND_DISK_REQ);
-                while (disk.testAndResetReady() == false)
+                while(disk.testAndResetReady() == false)
                     ioQueue.enqueueAndSleep(COND_DISK_FIN);
 
                 /*
@@ -163,22 +161,22 @@ public class Kernel {
 
                 return OK;
             case READ:
-                switch (param) {
+                switch(param) {
                 case STDIN:
                     try {
                         String s = input.readLine(); // read a keyboard input
-                        if (s == null) {
+                        if(s == null)
                             return ERROR;
-                        }
+
                         // prepare a read buffer
-                        StringBuffer buf = (StringBuffer) args;
+                        StringBuffer buf = (StringBuffer)args;
 
                         // append the keyboard intput to this read buffer
                         buf.append(s);
 
                         // return the number of chars read from keyboard
                         return s.length();
-                    } catch (IOException e) {
+                    } catch(IOException e) {
                         System.out.println(e);
                         return ERROR;
                     }
@@ -190,22 +188,22 @@ public class Kernel {
                 // return FileSystem.read( param, byte args[] );
                 return ERROR;
             case WRITE:
-                switch (param) {
+                switch(param) {
                 case STDIN:
                     System.out.println("threadOS: cannot write to System.in");
                     return ERROR;
                 case STDOUT:
-                    System.out.print((String) args);
+                    System.out.print((String)args);
                     break;
                 case STDERR:
-                    System.err.print((String) args);
+                    System.err.print((String)args);
                     break;
                 }
                 return OK;
             case CREAD: // to be implemented in assignment 4
-                return cache.read(param, (byte[]) args) ? OK : ERROR;
+                return cache.read(param, (byte[])args) ? OK : ERROR;
             case CWRITE: // to be implemented in assignment 4
-                return cache.write(param, (byte[]) args) ? OK : ERROR;
+                return cache.write(param, (byte[])args) ? OK : ERROR;
             case CSYNC: // to be implemented in assignment 4
                 cache.sync();
                 return OK;
@@ -220,8 +218,8 @@ public class Kernel {
                 return OK;
             case SEEK: // to be implemented in project
                 return OK;
-            case FORMAT: // to be implemented in project
-                return OK;
+            case FORMAT:
+                return fs.format(param) ? OK : ERROR;
             case DELETE: // to be implemented in project
                 return OK;
             }
@@ -241,20 +239,21 @@ public class Kernel {
     }
 
     // Spawning a new thread
-    private static int sysExec(String args[]) {
+    private static int sysExec(String args[])
+    {
         String thrName = args[0]; // args[0] has a thread name
         Object thrObj = null;
 
         try {
             //get the user thread class from its name
             Class thrClass = Class.forName(thrName);
-            if (args.length == 1) // no arguments
+            if(args.length == 1) // no arguments
                 thrObj = thrClass.newInstance(); // instantiate this class obj
             else { // some arguments
                 // copy all arguments into thrArgs[] and make a new constructor
                 // argument object from thrArgs[]
                 String thrArgs[] = new String[args.length - 1];
-                for (int i = 1; i < args.length; i++)
+                for(int i = 1; i < args.length; i++)
                     thrArgs[i - 1] = args[i];
                 Object[] constructorArgs = new Object[] { thrArgs };
 
@@ -272,19 +271,19 @@ public class Kernel {
             // add this thread into scheduler's circular list.
             TCB newTcb = scheduler.addThread(t);
             return (newTcb != null) ? newTcb.getTid() : ERROR;
-        } catch (ClassNotFoundException e) {
+        } catch(ClassNotFoundException e) {
             System.out.println(e);
             return ERROR;
-        } catch (NoSuchMethodException e) {
+        } catch(NoSuchMethodException e) {
             System.out.println(e);
             return ERROR;
-        } catch (InstantiationException e) {
+        } catch(InstantiationException e) {
             System.out.println(e);
             return ERROR;
-        } catch (IllegalAccessException e) {
+        } catch(IllegalAccessException e) {
             System.out.println(e);
             return ERROR;
-        } catch (InvocationTargetException e) {
+        } catch(InvocationTargetException e) {
             System.out.println(e);
             return ERROR;
         }
