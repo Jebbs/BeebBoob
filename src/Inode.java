@@ -26,7 +26,7 @@ public class Inode {
         return 0;
     }
 
-    public static void inodeToBytes(Inode node, bytes[] b, int offset)
+    public static void inodeToBytes(Inode node, byte[] b, int offset)
     {
         SysLib.int2bytes(node.length, b, offset);
 

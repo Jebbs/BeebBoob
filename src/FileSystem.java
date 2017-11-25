@@ -50,7 +50,9 @@ public class FileSystem{
         for(int i = files, j = 0; i > 0; i-= inodesPerBlock, j=0)
         {
             //get next free block (though it will be early)
-            SysLib.rawwrite(i, inodeBlock);
+            int block = superBlock.findFirstFreeBlock();
+            superBlock.setFreeList(block, true);
+            SysLib.rawwrite(block, inodeBlock);
         }
 
         return true;

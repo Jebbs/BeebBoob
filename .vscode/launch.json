@@ -17,9 +17,6 @@
             "name": "Debug (Attach)",
             "request": "attach",
             "hostName": "localhost",
-            "sourcePaths": [
-                "${workspaceFolder}/src/"
-            ],
             "port": 2121
         }
     ]
