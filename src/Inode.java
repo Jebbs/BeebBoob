@@ -10,7 +10,7 @@ public class Inode {
     public short indirect;
 
     public Inode(){
-        length = 0;
+        length = -1;
         count = 0;
         flag = 0;//think about this
         for(int i = 0; i < directSize; i++)
