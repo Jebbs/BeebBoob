@@ -9,6 +9,9 @@
             "name": "Debug (Launch)",
             "request": "launch",
             "cwd": "${workspaceFolder}",
+            "classPaths": [
+                "ThreadOS"
+            ],
             "mainClass": "Boot",
             "args": ""
         },
