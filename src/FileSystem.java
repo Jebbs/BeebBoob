@@ -53,7 +53,7 @@ public class FileSystem{
      */
     FileTableEntry open(String filename, String mode){
         short thing = -1;
-        return new FileTableEntry(new Inode(), thing, "");
+        return new FileTableEntry(new Inode(), thing, FileMode.parse(mode));
     }
 
     boolean close(FileTableEntry entry){
@@ -104,7 +104,7 @@ public class FileSystem{
         for(int i = files, j = 0; i > 0; i-= inodesPerBlock, j=0)
         {
             //get next free block (though it will be early)
-            int block = superBlock.findFirstFreeBlock();
+            short block = superBlock.findFirstFreeBlock();
             superBlock.setFreeList(block, true);
             SysLib.rawwrite(block, inodeBlock);
         }
