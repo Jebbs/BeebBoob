@@ -1,10 +1,10 @@
-public class FileTableEntry     // Each table entry should have
+public class FileTableEntry
 {
-    public int seekPtr;         //  a file seek pointer
-    public final Inode inode;   //  a reference to its inode
-    public final short iNumber; //  this inode number
-    public int count;           //  # threads sharing this entry
-    public final FileMode mode;   //  "r", "w", "w+", or "a"
+    public int seekPtr;
+    public final Inode inode;
+    public final short iNumber;
+    public int count;
+    public final FileMode mode;
 
     public FileTableEntry(Inode i, short inumber, FileMode m)
     {
