@@ -99,14 +99,19 @@ public class FileSystem
 
     int seek(FileTableEntry entry, int offset, int whence)
     {
-        // TODO: bounds checking
-        if(whence == SEEK_SET) {
+        if(whence == SEEK_SET)
             entry.seekPtr = offset;
-        } else if(whence == SEEK_CUR) {
+        else if(whence == SEEK_CUR)
             entry.seekPtr += offset;
-        } else if(whence == SEEK_END) {
-            entry.seekPtr = entry.inode.length - offset;
-        }
+        else if(whence == SEEK_END)
+            entry.seekPtr = entry.inode.length + offset;
+
+        if(entry.seekPtr < 0)
+            entry.seekPtr = 0;
+        else if(entry.seekPtr > entry.inode.length)
+            entry.seekPtr = entry.inode.length;
+
+        return 0;
     }
 
     private boolean diskFormat(int files)
