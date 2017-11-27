@@ -53,18 +53,17 @@ public class FileSystem
 
     FileTableEntry open(String filename, String mode)
     {
-        short thing = -1;
-        return new FileTableEntry(new Inode(), thing, FileMode.parse(mode));
+        return fileTable.falloc(filename, mode);
     }
 
     boolean close(FileTableEntry entry)
     {
-        return false;
+        return fileTable.ffree(entry);
     }
 
     int fsize(FileTableEntry entry)
     {
-        return -1;
+        return entry.inode.length;
     }
 
     int read(FileTableEntry entry, byte[] buffer)
@@ -87,13 +86,20 @@ public class FileSystem
         return false;
     }
 
-    private final int SEEK_SET = 0;
-    private final int SEEK_CUR = 0;
-    private final int SEEK_END = 0;
+    public final int SEEK_SET = 0;
+    public final int SEEK_CUR = 1;
+    public final int SEEK_END = 2;
 
     int seek(FileTableEntry entry, int offset, int whence)
     {
-        return -1;
+        // TODO: bounds checking
+        if(whence == SEEK_SET) {
+            entry.seekPtr = offset;
+        } else if(whence == SEEK_CUR) {
+            entry.seekPtr += offset;
+        } else if(whence == SEEK_END) {
+            entry.seekPtr = entry.inode.length - offset;
+        }
     }
 
     private boolean diskFormat(int files)
