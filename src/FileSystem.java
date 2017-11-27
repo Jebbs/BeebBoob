@@ -65,7 +65,10 @@ public class FileSystem
 
     boolean close(FileTableEntry entry)
     {
-        return fileTable.ffree(entry);
+        if(--entry.inode.count == 0)
+            return fileTable.ffree(entry);
+
+        return true;
     }
 
     int fsize(FileTableEntry entry)

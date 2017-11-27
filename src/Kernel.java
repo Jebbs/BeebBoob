@@ -211,12 +211,27 @@ public class Kernel
                 cache.flush();
                 return OK;
             case OPEN: // to be implemented in project
-                return OK;
-            case CLOSE: // to be implemented in project
-                return OK;
-            case SIZE: // to be implemented in project
-                return OK;
-            case SEEK: // to be implemented in project
+                if(param < 0 || param > 31) return ERROR;
+                String[] _s_args = (String[])args;
+                FileTableEntry _fte = fs.open(_s_args[0], _s_args[1]);
+                if(_fte == null) return ERROR;
+                for(int i = 0; i < 32; ++i) {
+                    if(scheduler.getMyTcb().ftEnt[i] == null) {
+                        scheduler.getMyTcb().ftEnt[i] = _fte;
+                        return OK;
+                    }
+                }
+                return ERROR;
+            case CLOSE:
+                if(param < 0 || param > 31) return ERROR;
+                return fs.close(scheduler.getMyTcb().ftEnt[param]) ? OK : ERROR;
+            case SIZE:
+                if(param < 0 || param > 31) return ERROR;
+                return fs.fsize(scheduler.getMyTcb().ftEnt[param]);
+            case SEEK:
+                if(param < 0 || param > 31) return ERROR;
+                int _args[] = (int[])args;
+                fs.seek(scheduler.getMyTcb().ftEnt[param], _args[0], _args[1]);
                 return OK;
             case FORMAT:
                 return fs.format(param) ? OK : ERROR;
