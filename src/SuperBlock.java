@@ -2,6 +2,8 @@ public class SuperBlock
 {
     public int totalBlocks;
     public int totalInodes;
+    public int firstFreeBlock;
+
     private int freeList[];
 
     public SuperBlock(int diskSize)
@@ -11,10 +13,11 @@ public class SuperBlock
 
         totalBlocks = SysLib.bytes2int(block, 0);
         totalInodes = SysLib.bytes2int(block, 4);
+        firstFreeBlock = SysLib.bytes2int(block, 8);
 
         freeList = new int[32];
         for(int i = 0; i < 32; ++i)
-            freeList[i] = SysLib.bytes2int(block, 8 + 4 * i);
+            freeList[i] = SysLib.bytes2int(block, 12 + 4 * i);
     }
 
     public boolean getFreeList(short i)
@@ -66,9 +69,11 @@ public class SuperBlock
         byte[] block = new byte[Disk.blockSize];
         SysLib.int2bytes(totalBlocks, block, 0);
         SysLib.int2bytes(totalInodes, block, 4);
+        firstFreeBlock = findFirstFreeBlock();
+        SysLib.int2bytes(firstFreeBlock, block, 8);
 
         for(short i = 0; i < 32; ++i)
-            SysLib.int2bytes(freeList[i], block, 8 + 4 * i);
+            SysLib.int2bytes(freeList[i], block, 12 + 4 * i);
 
         SysLib.rawwrite(0, block);
     }

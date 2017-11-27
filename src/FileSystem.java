@@ -8,9 +8,8 @@ public class FileSystem
     private SuperBlock superBlock;
     private Directory directory;
     private FileTable fileTable;
-    private Scheduler scheduler;//this is to have access to the TCB's
 
-    public FileSystem(int diskBlocks, Scheduler sched)
+    public FileSystem(int diskBlocks)
     {
         inodesPerBlock = Disk.blockSize / Inode.iNodeSize;
         superBlock = new SuperBlock(diskBlocks);
@@ -21,8 +20,6 @@ public class FileSystem
         directory = new Directory(superBlock.totalInodes);
 
         fileTable = new FileTable(directory);
-
-        scheduler = sched;
 
         //directory reconstruction?
         FileTableEntry dirEntry = open("/", "r");
@@ -125,7 +122,7 @@ public class FileSystem
         byte[] inodeBlock = new byte[Disk.blockSize];
         Inode blankInode = new Inode();
         for(int i = 0; i < inodesPerBlock; i++)
-            Inode.inodeToBytes(blankInode, inodeBlock, i * Inode.iNodeSize);
+            blankInode.saveToBytes(inodeBlock, i * Inode.iNodeSize);
 
         //rewrite the inode blocks
         for(int i = files, j = 0; i > 0; i -= inodesPerBlock, j = 0) {
@@ -136,10 +133,10 @@ public class FileSystem
         }
 
         //set up first inode to refer to a directory
-        Inode directory = new Inode();
-        directory.length = 32;
-        directory.direct[0] = superBlock.findFirstFreeBlock();
-        Inode.inodeToBytes(directory, inodeBlock, 0);
+        Inode dirNode = new Inode();
+        dirNode.length = 32;
+        dirNode.direct[0] = superBlock.findFirstFreeBlock();
+        dirNode.saveToBytes(inodeBlock, 0);
         SysLib.rawwrite(1, inodeBlock);//1 is the first block after superblock
 
         //write the directory block to disk
@@ -153,7 +150,7 @@ public class FileSystem
         for(int i = 0, j = 2; i < name.length; i++, j++)
             directoryBlock[j] = nameInBytes[i];
 
-        SysLib.rawwrite(directory.direct[0], directoryBlock);
+        SysLib.rawwrite(dirNode.direct[0], directoryBlock);
         superBlock.sync();
         return true;
     }

@@ -88,7 +88,7 @@ public class Kernel
                 waitQueue = new SyncQueue(scheduler.getMaxThreads());
 
                 //instantiate a file system
-                fs = new FileSystem(1000, scheduler);
+                fs = new FileSystem(1000);
 
                 return OK;
             case EXEC:

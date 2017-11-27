@@ -54,43 +54,32 @@ public class Inode {
         return 0; //what is this even supposed to return?
     }
 
-    /**
-     * This is an old function. It's going to be replaced by saveToBytes
-     */
-    public static void inodeToBytes(Inode node, byte[] b, int offset)
-    {
-        SysLib.int2bytes(node.length, b, offset);
-
-        for(int i = 0; i < directSize; i++)
-        {
-            SysLib.short2bytes(node.direct[i], b, offset+4+(i*2));
-        }
-
-        SysLib.short2bytes(node.indirect, b, offset+4+22);
-    }
-
     public void loadFromBytes(byte[] buffer, int offset)
     {
         length = SysLib.bytes2int(buffer, offset);
+        count = SysLib.bytes2short(buffer, offset+4);
+        flag = SysLib.bytes2short(buffer, offset+6);
 
         for(int i = 0; i < directSize; i++)
         {
-            direct[i] = SysLib.bytes2short(buffer, offset+4+(i*2));
+            direct[i] = SysLib.bytes2short(buffer, offset+8+(i*2));
         }
 
-        indirect = SysLib.bytes2short(buffer, offset+4+22);
+        indirect = SysLib.bytes2short(buffer, offset+8+22);
     }
 
     public void saveToBytes(byte[] buffer, int offset)
     {
         SysLib.int2bytes(length, buffer, offset);
+        SysLib.short2bytes(count, buffer, offset+4);
+        SysLib.short2bytes(flag, buffer, offset+6);
 
         for(int i = 0; i < directSize; i++)
         {
-            SysLib.short2bytes(direct[i], buffer, offset+4+(i*2));
+            SysLib.short2bytes(direct[i], buffer, offset+8+(i*2));
         }
 
-        SysLib.short2bytes(indirect, buffer, offset+4+22);
+        SysLib.short2bytes(indirect, buffer, offset+8+22);
     }
 
 }
