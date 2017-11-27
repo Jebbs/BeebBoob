@@ -2,8 +2,10 @@ import java.nio.charset.*;
 
 public class Directory {
     private static int maxChars = 30; // max characters of each file name
+    private static int chunkLength = 32; //sze of a chunk of data on disk
 
     private FileBlock files[];
+    private int fileCount;
 
     public Directory(int maxInumber) {
         files = new FileBlock[maxInumber];
@@ -13,22 +15,23 @@ public class Directory {
         String root = "/"; // entry(inode) 0 is "/"
         files[0].length = root.length();
         root.getChars(0, files[0].length, files[0].filename, 0);
+        fileCount = 1;
     }
 
     public int bytes2directory(byte data[]) {
         byte[] filename = new byte[30];
 
         //start at the second chunk since the directory is already set up
-        for(int i = 32; i < data.length;i+=32)
+        for(int i = 32; i < data.length;i+=chunkLength)
         {
             short inum = SysLib.bytes2short(data, i);
             copyBytes(data, filename, i+2, 0, filename.length);
 
             files[inum].load(filename);
+            fileCount++;
         }
 
-
-        return -1;
+        return 0;
     }
 
     public byte[] directory2bytes() {
@@ -36,18 +39,35 @@ public class Directory {
         // this byte array will be written back to disk
         // note: only meaningfull directory information should be converted
         // into bytes.
-        return new byte[0];
+
+        byte[] dir = new byte[fileCount * chunkLength];
+
+        for(short i = 0; i < files.length; i++)
+        {
+            if(files[i].length>0)
+            {
+                SysLib.short2bytes(i, dir, i*chunkLength);
+                copyBytes(toBytes(files[i].filename), dir, 0, i*chunkLength+2,
+                          maxChars);
+            }
+        }
+
+        return dir;
     }
 
     /**
      * Copy sections of byte arrays to other sections of byte arrays.
      *
-     * I wish I memcpy and pointers.
+     * I wish I had memcpy and pointers.
      */
     private void copyBytes(byte[] from, byte[] to, int fstart, int tstart, int len)
     {
         for (int i = 0; i < len; i++)
             to[i+tstart] = from[i+fstart];
+    }
+    private byte[] toBytes(char[] chars)
+    {
+        return new String(chars).getBytes(Charset.forName("UTF-8"));
     }
 
     /**
@@ -120,12 +140,17 @@ class FileBlock {
     {
         String fString = new String(data, Charset.forName("UTF-8"));
 
-        for(length = 0; length < 30; length++)
+        for(length = 0; length < filename.length; length++)
         {
             if(fString.charAt(length) == '\0')
                 break;
 
             filename[length] = fString.charAt(length);
+        }
+
+        if(length < filename.length)
+        {
+            filename[length] = '\0';
         }
     }
 }
