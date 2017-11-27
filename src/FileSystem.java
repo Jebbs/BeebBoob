@@ -28,6 +28,13 @@ public class FileSystem
         //directory reconstruction?
         FileTableEntry dirEntry = open("/", "r");
         int dirSize = fsize(dirEntry);
+        if(dirSize>0)
+        {
+            byte[] dirData = new byte[dirSize];
+            read(dirEntry, dirData);
+            directory.bytes2directory(dirData);
+        }
+        close(dirEntry);
     }
 
 
