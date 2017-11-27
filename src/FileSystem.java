@@ -4,7 +4,7 @@ import java.nio.charset.*;
 
 public class FileSystem
 {
-    private static int inodesPerBlock;
+    public static int inodesPerBlock;
 
     private SuperBlock superBlock;
     private Directory directory;
