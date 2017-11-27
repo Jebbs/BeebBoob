@@ -1,5 +1,4 @@
-import java.util.*;
-import java.nio.*;
+
 import java.nio.charset.*;
 
 public class FileSystem
@@ -163,9 +162,6 @@ public class FileSystem
     // https://stackoverflow.com/questions/5513144/converting-char-to-byte
     private byte[] toBytes(char[] chars)
     {
-        CharBuffer charBuffer = CharBuffer.wrap(chars);
-        ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
-        return Arrays.copyOfRange(byteBuffer.array(),
-                byteBuffer.position(), byteBuffer.limit());
+        return new String(chars).getBytes(Charset.forName("UTF-8"));
     }
 }

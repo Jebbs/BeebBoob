@@ -1,3 +1,5 @@
+import java.nio.charset.*;
+
 public class Directory {
     private static int maxChars = 30; // max characters of each file name
 
@@ -14,8 +16,18 @@ public class Directory {
     }
 
     public int bytes2directory(byte data[]) {
-        // assumes data[] received directory information from disk
-        // initializes the Directory instance with this data[]
+        byte[] filename = new byte[30];
+
+        //start at the second chunk since the directory is already set up
+        for(int i = 32; i < data.length;i+=32)
+        {
+            short inum = SysLib.bytes2short(data, i);
+            copyBytes(data, filename, i+2, 0, filename.length);
+
+            files[inum].load(filename);
+        }
+
+
         return -1;
     }
 
@@ -25,6 +37,17 @@ public class Directory {
         // note: only meaningfull directory information should be converted
         // into bytes.
         return new byte[0];
+    }
+
+    /**
+     * Copy sections of byte arrays to other sections of byte arrays.
+     *
+     * I wish I memcpy and pointers.
+     */
+    private void copyBytes(byte[] from, byte[] to, int fstart, int tstart, int len)
+    {
+        for (int i = 0; i < len; i++)
+            to[i+tstart] = from[i+fstart];
     }
 
     /**
@@ -91,5 +114,18 @@ class FileBlock {
 
     FileBlock(int size) {
         filename = new char[size];
+    }
+
+    void load(byte[] data)
+    {
+        String fString = new String(data, Charset.forName("UTF-8"));
+
+        for(length = 0; length < 30; length++)
+        {
+            if(fString.charAt(length) == '\0')
+                break;
+
+            filename[length] = fString.charAt(length);
+        }
     }
 }
