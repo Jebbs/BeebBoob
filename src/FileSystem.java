@@ -102,7 +102,16 @@ public class FileSystem
         if(entry.mode == FileMode.READ)
             return -1;
 
-        // TODO: expand buffer if necessary
+        if(entry.seekPtr + buffer.length > entry.inode.length) {
+            if((entry.seekPtr + buffer.length) / Disk.blockSize
+                > entry.inode.length / Disk.blockSize) {
+
+                // TODO: if (cannot allocate more blocks for file) return -1;
+                // TODO: allocate more blocks for file
+            }
+
+            entry.inode.length = entry.seekPtr + buffer.length;
+        }
 
         int currentFrame = -1;
         byte currentBuffer[] = new byte[Disk.blockSize];
@@ -120,6 +129,7 @@ public class FileSystem
             currentBuffer[indexInFrame] = buffer[i];
         }
 
+        SysLib.cwrite(currentFrame, currentBuffer);
         return buffer.length;
     }
 
