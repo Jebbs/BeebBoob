@@ -52,14 +52,18 @@ public class SuperBlock
 
     public short findFirstFreeBlock()
     {
-        for(short i = 0; i < 32; ++i) {
+        for(short i = 0; i < 31; ++i) {
             if(freeList[i] != 0xFFFFFFFF) {
                 short j = (short)(i << 5);
-                for(short k = j; k < (j>968?1000:j+32); ++k)
+                for(short k = j; k < j + 32; ++k)
                     if(!getFreeList(k))
                         return k;
             }
         }
+
+        for(short k = 992; k < 1000; ++k)
+            if(!getFreeList(k))
+                return k;
 
         return -1;
     }
@@ -69,6 +73,7 @@ public class SuperBlock
         byte[] block = new byte[Disk.blockSize];
         SysLib.int2bytes(totalBlocks, block, 0);
         SysLib.int2bytes(totalInodes, block, 4);
+
         firstFreeBlock = findFirstFreeBlock();
         SysLib.int2bytes(firstFreeBlock, block, 8);
 

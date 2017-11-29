@@ -219,10 +219,10 @@ public class Kernel
                 String[] _s_args = (String[])args;
                 FileTableEntry _fte = fs.open(_s_args[0], _s_args[1]);
                 if(_fte == null) return ERROR;
-                for(int i = 0; i < 32; ++i) {
+                for(int i = 3; i < 32; ++i) {
                     if(scheduler.getMyTcb().ftEnt[i] == null) {
                         scheduler.getMyTcb().ftEnt[i] = _fte;
-                        return OK;
+                        return i;
                     }
                 }
                 return ERROR;
