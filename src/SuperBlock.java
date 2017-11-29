@@ -68,6 +68,26 @@ public class SuperBlock
         return -1;
     }
 
+    public boolean areXFreeBlocksUnavailable(int x)
+    {
+        for(short i = 0; i < 31; ++i) {
+            if(freeList[i] != 0xFFFFFFFF) {
+                short j = (short)(i << 5);
+                for(short k = j; k < j + 32; ++k)
+                    if(!getFreeList(k))
+                        if(--x == 0)
+                            return false;
+            }
+        }
+
+        for(short k = 992; k < 1000; ++k)
+            if(!getFreeList(k))
+                if(--x == 0)
+                    return false;
+
+        return true;
+    }
+
     public void sync()
     {
         byte[] block = new byte[Disk.blockSize];

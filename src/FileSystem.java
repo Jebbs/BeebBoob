@@ -105,7 +105,9 @@ public class FileSystem
         if((entry.seekPtr + buffer.length) / Disk.blockSize > 265)
             return -1;
 
-        // TODO: error if the filesystem is going to run out of room
+        if(superBlock.areXFreeBlocksUnavailable((entry.seekPtr + buffer.length)
+            / Disk.blockSize - entry.inode.length / Disk.blockSize))
+            return -1;
 
     block_allocation:
         for(int i = (entry.seekPtr + buffer.length) / Disk.blockSize;
