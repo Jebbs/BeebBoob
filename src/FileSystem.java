@@ -102,16 +102,53 @@ public class FileSystem
         if(entry.mode == FileMode.READ)
             return -1;
 
-        if(entry.seekPtr + buffer.length > entry.inode.length) {
-            if((entry.seekPtr + buffer.length) / Disk.blockSize
-                > entry.inode.length / Disk.blockSize) {
+        if((entry.seekPtr + buffer.length) / Disk.blockSize > 265)
+            return -1;
 
-                // TODO: if (cannot allocate more blocks for file) return -1;
-                // TODO: allocate more blocks for file
+        // TODO: error if the filesystem is going to run out of room
+
+    block_allocation:
+        for(int i = (entry.seekPtr + buffer.length) / Disk.blockSize;
+            i > entry.inode.length / Disk.blockSize; --i) {
+
+            for(int j = 0; j <= Inode.directSize; ++j) {
+                if(entry.inode.direct[j] == -1) {
+                    short next = superBlock.findFirstFreeBlock();
+                    entry.inode.direct[j] = next;
+                    superBlock.setFreeList(next, true);
+                    continue block_allocation;
+                }
             }
 
-            entry.inode.length = entry.seekPtr + buffer.length;
+            byte indirect_content[] = new byte[Disk.blockSize];
+
+            if(entry.inode.indirect == -1) {
+                short indie = superBlock.findFirstFreeBlock();
+                entry.inode.indirect = indie;
+                superBlock.setFreeList(indie, true);
+
+                for(int j = 0; j < indirect_content.length; ++j)
+                    indirect_content[j] = (byte)(-1);
+
+                SysLib.cwrite(indie, indirect_content);
+            }
+
+            SysLib.cread(entry.inode.indirect, indirect_content);
+
+            for(int j = 0; j < indirect_content.length; j += 2) {
+                if(SysLib.bytes2short(indirect_content, j) < 0) {
+                    short next = superBlock.findFirstFreeBlock();
+                    SysLib.short2bytes(next, indirect_content, j);
+                    superBlock.setFreeList(next, true);
+                    break;
+                }
+            }
+
+            SysLib.cwrite(entry.inode.indirect, indirect_content);
         }
+
+        if(entry.seekPtr + buffer.length > entry.inode.length)
+            entry.inode.length = entry.seekPtr + buffer.length;
 
         int currentFrame = -1;
         byte currentBuffer[] = new byte[Disk.blockSize];
@@ -188,7 +225,7 @@ public class FileSystem
         dirNode.length = 32;
         dirNode.direct[0] = superBlock.findFirstFreeBlock();
         dirNode.saveToBytes(inodeBlock, 0);
-        SysLib.rawwrite(1, inodeBlock);//1 is the first block after superblock
+        SysLib.rawwrite(1, inodeBlock);//1 is the first block after superBlock
 
         //write the directory block to disk
         byte[] directoryBlock = new byte[Disk.blockSize];
