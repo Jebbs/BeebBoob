@@ -185,9 +185,8 @@ public class Kernel
                     System.out.println("threadOS: caused read errors");
                     return ERROR;
                 default:
-                    StringBuffer buf = (StringBuffer)args;
-                    //int fsr = fs.read(scheduler.getMyTcb().ftEnt[param]);
-                    return ERROR;
+                    return fs.read(scheduler.getMyTcb().ftEnt[param],
+                        (byte[])args);
                 }
             case WRITE:
                 switch(param) {
@@ -202,7 +201,7 @@ public class Kernel
                     break;
                 default:
                     return fs.write(scheduler.getMyTcb().ftEnt[param],
-                        ((String)args).getBytes()) == -1 ? ERROR : OK;
+                        (byte[])args);
                 }
                 return OK;
             case CREAD: // to be implemented in assignment 4
