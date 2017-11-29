@@ -172,9 +172,25 @@ public class FileSystem
         return buffer.length;
     }
 
-    private boolean deallocAllBlocks(FileTableEntry entry)
+    private void deallocAllBlocks(FileTableEntry entry)
     {
-        return false;
+        for(int i = 0; i < Inode.directSize; ++i)
+            if(entry.inode.direct[i] > -1)
+                superBlock.setFreeList(entry.inode.direct[i], false);
+
+        if(entry.inode.indirect > -1) {
+            byte indirect_content[] = new byte[Disk.blockSize];
+            SysLib.cread(entry.inode.indirect, indirect_content);
+
+            for(int i = 0; i < Disk.blockSize; i += 2) {
+                short j = SysLib.bytes2short(indirect_content, i);
+
+                if(j > -1)
+                    superBlock.setFreeList(j, false);
+            }
+
+            superBlock.setFreeList(entry.inode.indirect, false);
+        }
     }
 
     boolean delete(String filename)
