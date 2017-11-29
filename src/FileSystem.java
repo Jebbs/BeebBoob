@@ -88,7 +88,7 @@ public class FileSystem
 
             if(newFrame != currentFrame) {
                 currentFrame = newFrame;
-                SysLib.cread(newFrame, currentBuffer);
+                SysLib.cread(currentFrame, currentBuffer);
             }
 
             buffer[i] = currentBuffer[indexInFrame];
@@ -102,7 +102,25 @@ public class FileSystem
         if(entry.mode == FileMode.READ)
             return -1;
 
-        return -1;
+        // TODO: expand buffer if necessary
+
+        int currentFrame = -1;
+        byte currentBuffer[] = new byte[Disk.blockSize];
+
+        for(int i = 0; i < buffer.length; ++i, ++entry.seekPtr) {
+            int indexInFrame = entry.seekPtr % Disk.blockSize;
+            int newFrame = entry.fetchFrame();
+
+            if(newFrame != currentFrame) {
+                SysLib.cwrite(currentFrame, currentBuffer);
+                currentFrame = newFrame;
+                SysLib.cread(currentFrame, currentBuffer);
+            }
+
+            currentBuffer[indexInFrame] = buffer[i];
+        }
+
+        return buffer.length;
     }
 
     private boolean deallocAllBlocks(FileTableEntry entry)
