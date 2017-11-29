@@ -1,7 +1,7 @@
 
 public class Inode {
     public final static int iNodeSize = 32;
-    private final static int directSize = 11;
+    public final static int directSize = 11;
     private static byte[] buffer;
 
     public int length;

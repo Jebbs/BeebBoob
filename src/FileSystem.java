@@ -74,11 +74,34 @@ public class FileSystem
 
     int read(FileTableEntry entry, byte[] buffer)
     {
-        return -1;
+        if(entry.mode == FileMode.WRITE || entry.mode == FileMode.APPEND)
+            return -1;
+
+        int i = 0;
+        int currentFrame = -1;
+        byte currentBuffer[] = new byte[Disk.blockSize];
+
+        for(; i < buffer.length && entry.seekPtr < entry.inode.length; ++i,
+            ++entry.seekPtr) {
+            int indexInFrame = entry.seekPtr % Disk.blockSize;
+            int newFrame = entry.fetchFrame();
+
+            if(newFrame != currentFrame) {
+                currentFrame = newFrame;
+                SysLib.cread(newFrame, currentBuffer);
+            }
+
+            buffer[i] = currentBuffer[indexInFrame];
+        }
+
+        return i;
     }
 
     int write(FileTableEntry entry, byte[] buffer)
     {
+        if(entry.mode == FileMode.READ)
+            return -1;
+
         return -1;
     }
 

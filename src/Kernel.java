@@ -184,9 +184,11 @@ public class Kernel
                 case STDERR:
                     System.out.println("threadOS: caused read errors");
                     return ERROR;
+                default:
+                    StringBuffer buf = (StringBuffer)args;
+                    //int fsr = fs.read(scheduler.getMyTcb().ftEnt[param]);
+                    return ERROR;
                 }
-                // return FileSystem.read( param, byte args[] );
-                return ERROR;
             case WRITE:
                 switch(param) {
                 case STDIN:
@@ -198,6 +200,9 @@ public class Kernel
                 case STDERR:
                     System.err.print((String)args);
                     break;
+                default:
+                    return fs.write(scheduler.getMyTcb().ftEnt[param],
+                        ((String)args).getBytes()) == -1 ? ERROR : OK;
                 }
                 return OK;
             case CREAD: // to be implemented in assignment 4
@@ -210,7 +215,7 @@ public class Kernel
             case CFLUSH: // to be implemented in assignment 4
                 cache.flush();
                 return OK;
-            case OPEN: // to be implemented in project
+            case OPEN:
                 if(param < 0 || param > 31) return ERROR;
                 String[] _s_args = (String[])args;
                 FileTableEntry _fte = fs.open(_s_args[0], _s_args[1]);
