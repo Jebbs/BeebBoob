@@ -56,7 +56,16 @@ public class FileSystem
 
     FileTableEntry open(String filename, String mode)
     {
-        return fileTable.falloc(filename, mode);
+        short i = directory.namei(filename);
+        FileTableEntry r = fileTable.falloc(filename, mode);
+
+        if(i == -1 && r != null) {
+            short n = superBlock.findFirstFreeBlock();
+            r.inode.direct[0] = n;
+            superBlock.setFreeList(n, true);
+        }
+
+        return r;
     }
 
     boolean close(FileTableEntry entry)
@@ -115,23 +124,14 @@ public class FileSystem
         if((entry.seekPtr + buffer.length) / Disk.blockSize > 265)
             return -1;
 
-        int requiredBlocks = ((buffer.length - (entry.inode.length - entry.seekPtr))/
-                                Disk.blockSize)+1;
-
-
-        //if(superBlock.areXFreeBlocksUnavailable((entry.seekPtr + buffer.length)
-        //    / Disk.blockSize - entry.inode.length / Disk.blockSize))
-
+        int requiredBlocks = (entry.seekPtr + buffer.length) / Disk.blockSize
+            - entry.inode.length / Disk.blockSize;
 
         if(superBlock.areXFreeBlocksUnavailable(requiredBlocks))
             return -1;
 
     block_allocation:
-
-        //for(int i = (entry.seekPtr + buffer.length) / Disk.blockSize;
-        //  i > entry.inode.length / Disk.blockSize; --i)
         for(int i = 0; i < requiredBlocks; i++) {
-
             for(int j = 0; j < Inode.directSize; ++j) {
                 if(entry.inode.direct[j] == -1) {
                     short next = superBlock.findFirstFreeBlock();
