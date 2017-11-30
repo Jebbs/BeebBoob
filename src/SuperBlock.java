@@ -73,6 +73,9 @@ public class SuperBlock
     //why not just keep track of the number of free blocks?
     public boolean areXFreeBlocksUnavailable(int x)
     {
+        if(x <= 0)
+            return false;
+
         for(short i = 0; i < 31; ++i) {
             if(freeList[i] != 0xFFFFFFFF) {
                 short j = (short)(i << 5);
