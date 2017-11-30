@@ -32,6 +32,12 @@ public class FileTable
             return null;
 
         Inode node = new Inode(iNum);
+        if(node.flag == 0)
+        {
+            node.flag = 1;
+            node.length = 0;
+        }
+
         node.count++;
         node.toDisk(iNum);
         return new FileTableEntry(node, iNum, fmode);

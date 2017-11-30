@@ -224,26 +224,27 @@ public class FileSystem
         superBlock.clearFreeList();
         superBlock.totalInodes = files;
 
-        //get an array of bytes for a block of blank inodes
-        byte[] inodeBlock = new byte[Disk.blockSize];
         Inode blankInode = new Inode();
-        for(int i = 0; i < inodesPerBlock; i++)
-            blankInode.saveToBytes(inodeBlock, i * Inode.iNodeSize);
 
-        //rewrite the inode blocks
-        for(int i = files, j = 0; i > 0; i -= inodesPerBlock, j = 0) {
-            //get next free block (though it will be early)
+        //reserve blocks
+        int neededBlocks = superBlock.totalInodes/inodesPerBlock;
+        for(int i = 0; i < neededBlocks; i++)
+        {
             short block = superBlock.findFirstFreeBlock();
             superBlock.setFreeList(block, true);
-            SysLib.rawwrite(block, inodeBlock);
+        }
+
+        //rewrite the inode blocks
+        for(short i = 0; i < files; i++)
+        {
+            blankInode.toDisk(i);
         }
 
         //set up first inode to refer to a directory
         Inode dirNode = new Inode();
         dirNode.length = 32;
         dirNode.direct[0] = superBlock.findFirstFreeBlock();
-        dirNode.saveToBytes(inodeBlock, 0);
-        SysLib.rawwrite(1, inodeBlock);//1 is the first block after superBlock
+        dirNode.toDisk((short)0);//0 is the directory inode
 
         //write the directory block to disk
         byte[] directoryBlock = new byte[Disk.blockSize];
@@ -258,6 +259,7 @@ public class FileSystem
 
         SysLib.rawwrite(dirNode.direct[0], directoryBlock);
         superBlock.sync();
+        SysLib.csync();
         return true;
     }
 
