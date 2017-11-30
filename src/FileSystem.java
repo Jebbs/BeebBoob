@@ -237,7 +237,7 @@ public class FileSystem
         else if(entry.seekPtr > entry.inode.length)
             entry.seekPtr = entry.inode.length;
 
-        return 0;
+        return entry.seekPtr;
     }
 
     private boolean diskFormat(int files)

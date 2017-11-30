@@ -239,8 +239,7 @@ public class Kernel
             case SEEK:
                 if(param < 0 || param > 31) return ERROR;
                 int _args[] = (int[])args;
-                fs.seek(scheduler.getMyTcb().ftEnt[param], _args[0], _args[1]);
-                return OK;
+                return fs.seek(scheduler.getMyTcb().ftEnt[param], _args[0], _args[1]);
             case FORMAT:
                 return fs.format(param) ? OK : ERROR;
             case DELETE: // to be implemented in project
