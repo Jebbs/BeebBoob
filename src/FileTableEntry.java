@@ -15,16 +15,17 @@ public class FileTableEntry
             seekPtr = inode.length;
     }
 
-    public int fetchFrame()
+    public short fetchFrame()
     {
-        int x = seekPtr / inode.length;
+        int x = seekPtr / Disk.blockSize;
 
         if(x >= 0 && x < inode.directSize)
             return inode.direct[x];
 
         byte indirectBlocks[] = new byte[Disk.blockSize];
-        x -= inode.directSize;
+        x = (x - inode.directSize) * 2;
         SysLib.cread(inode.indirect, indirectBlocks);
-        return (x >= 0 && x < Disk.blockSize) ? indirectBlocks[x] : -1;
+        return (x >= 0 && x < Disk.blockSize) ?
+            SysLib.bytes2short(indirectBlocks, x) : (short)(-1);
     }
 }
