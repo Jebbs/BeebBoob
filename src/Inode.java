@@ -10,7 +10,13 @@ public class Inode {
     public short[] direct = new short[directSize];
     public short indirect;
 
-    public Inode(){
+    public Inode()
+    {
+        clear();
+    }
+
+    public void clear()
+    {
         length = -1;
         count = 0;
         flag = 0;//think about this
@@ -22,8 +28,8 @@ public class Inode {
     /**
      * Construct an Inode from a given index.
      */
-    public Inode(short iNumber){
-
+    public Inode(short iNumber)
+    {
         //make sure we have our static buffer
         if(buffer == null)
             buffer = new byte[Disk.blockSize];
@@ -38,8 +44,8 @@ public class Inode {
     /**
      * Write an Inode to a given index.
      */
-    public int toDisk(short iNumber){
-
+    public int toDisk(short iNumber)
+    {
         //make sure we have our static buffer
         if(buffer == null)
             buffer = new byte[Disk.blockSize];
@@ -61,9 +67,7 @@ public class Inode {
         flag = SysLib.bytes2short(buffer, offset+6);
 
         for(int i = 0; i < directSize; i++)
-        {
             direct[i] = SysLib.bytes2short(buffer, offset+8+(i*2));
-        }
 
         indirect = SysLib.bytes2short(buffer, offset+8+22);
     }
@@ -75,11 +79,8 @@ public class Inode {
         SysLib.short2bytes(flag, buffer, offset+6);
 
         for(int i = 0; i < directSize; i++)
-        {
             SysLib.short2bytes(direct[i], buffer, offset+8+(i*2));
-        }
 
         SysLib.short2bytes(indirect, buffer, offset+8+22);
     }
-
 }

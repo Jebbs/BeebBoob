@@ -243,7 +243,7 @@ public class Kernel
             case FORMAT:
                 return fs.format(param) ? OK : ERROR;
             case DELETE: // to be implemented in project
-                return OK;
+                return fs.delete((String)args) ? OK : ERROR;
             }
             return ERROR;
         case INTERRUPT_DISK: // Disk interrupts

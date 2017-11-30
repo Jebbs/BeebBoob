@@ -193,15 +193,15 @@ public class FileSystem
         return buffer.length;
     }
 
-    private void deallocAllBlocks(FileTableEntry entry)
+    private void deallocAllBlocks(Inode entry, short inum)
     {
         for(int i = 0; i < Inode.directSize; ++i)
-            if(entry.inode.direct[i] > -1)
-                superBlock.setFreeList(entry.inode.direct[i], false);
+            if(entry.direct[i] > -1)
+                superBlock.setFreeList(entry.direct[i], false);
 
-        if(entry.inode.indirect > -1) {
+        if(entry.indirect > -1) {
             byte indirect_content[] = new byte[Disk.blockSize];
-            SysLib.cread(entry.inode.indirect, indirect_content);
+            SysLib.cread(entry.indirect, indirect_content);
 
             for(int i = 0; i < Disk.blockSize; i += 2) {
                 short j = SysLib.bytes2short(indirect_content, i);
@@ -210,13 +210,18 @@ public class FileSystem
                     superBlock.setFreeList(j, false);
             }
 
-            superBlock.setFreeList(entry.inode.indirect, false);
+            superBlock.setFreeList(entry.indirect, false);
         }
+
+        entry.clear();
+        entry.toDisk(inum);
     }
 
     boolean delete(String filename)
     {
-        return false;
+        short i = directory.namei(filename);
+        deallocAllBlocks(new Inode(i), i);
+        return directory.ifree(i);
     }
 
     public final int SEEK_SET = 0;
