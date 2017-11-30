@@ -40,7 +40,10 @@ public class FileTable
 
         node.count++;
         node.toDisk(iNum);
-        return new FileTableEntry(node, iNum, fmode);
+
+        FileTableEntry newEntry = new FileTableEntry(node, iNum, fmode);
+        table.add(newEntry);
+        return newEntry;
     }
 
     public synchronized boolean ffree(FileTableEntry e)
@@ -49,7 +52,13 @@ public class FileTable
         // save the corresponding inode to the disk
         // free this file table entry.
         // return true if this file table entry found in my table
-        return false;
+
+        //assumes count has already been decreased to 0
+
+        table.remove(e);
+        e.inode.toDisk(e.iNumber);
+
+        return true;
     }
 
     public synchronized boolean fempty()

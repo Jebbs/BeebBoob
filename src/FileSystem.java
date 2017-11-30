@@ -61,6 +61,9 @@ public class FileSystem
 
     boolean close(FileTableEntry entry)
     {
+        if(entry == null)
+            return false;
+
         if(--entry.inode.count == 0)
             return fileTable.ffree(entry);
 
@@ -69,11 +72,15 @@ public class FileSystem
 
     int fsize(FileTableEntry entry)
     {
-        return entry.inode.length;
+        return (entry == null)?-1:entry.inode.length;
     }
 
     int read(FileTableEntry entry, byte[] buffer)
     {
+
+        if(entry == null)
+            return -1;
+
         if(entry.mode == FileMode.WRITE || entry.mode == FileMode.APPEND)
             return -1;
 
@@ -99,21 +106,33 @@ public class FileSystem
 
     int write(FileTableEntry entry, byte[] buffer)
     {
+        if(entry == null)
+            return -1;
+
         if(entry.mode == FileMode.READ)
             return -1;
 
         if((entry.seekPtr + buffer.length) / Disk.blockSize > 265)
             return -1;
 
-        if(superBlock.areXFreeBlocksUnavailable((entry.seekPtr + buffer.length)
-            / Disk.blockSize - entry.inode.length / Disk.blockSize))
+        int requiredBlocks = ((buffer.length - (entry.inode.length - entry.seekPtr))/
+                                Disk.blockSize)+1;
+
+
+        //if(superBlock.areXFreeBlocksUnavailable((entry.seekPtr + buffer.length)
+        //    / Disk.blockSize - entry.inode.length / Disk.blockSize))
+
+
+        if(superBlock.areXFreeBlocksUnavailable(requiredBlocks))
             return -1;
 
     block_allocation:
-        for(int i = (entry.seekPtr + buffer.length) / Disk.blockSize;
-            i > entry.inode.length / Disk.blockSize; --i) {
 
-            for(int j = 0; j <= Inode.directSize; ++j) {
+        //for(int i = (entry.seekPtr + buffer.length) / Disk.blockSize;
+        //  i > entry.inode.length / Disk.blockSize; --i)
+        for(int i = 0; i < requiredBlocks; i++) {
+
+            for(int j = 0; j < Inode.directSize; ++j) {
                 if(entry.inode.direct[j] == -1) {
                     short next = superBlock.findFirstFreeBlock();
                     entry.inode.direct[j] = next;
@@ -160,7 +179,9 @@ public class FileSystem
             int newFrame = entry.fetchFrame();
 
             if(newFrame != currentFrame) {
-                SysLib.cwrite(currentFrame, currentBuffer);
+                if(currentFrame != -1)
+                    SysLib.cwrite(currentFrame, currentBuffer);
+
                 currentFrame = newFrame;
                 SysLib.cread(currentFrame, currentBuffer);
             }
@@ -244,6 +265,7 @@ public class FileSystem
         Inode dirNode = new Inode();
         dirNode.length = 32;
         dirNode.direct[0] = superBlock.findFirstFreeBlock();
+        superBlock.setFreeList(dirNode.direct[0], true);
         dirNode.toDisk((short)0);//0 is the directory inode
 
         //write the directory block to disk

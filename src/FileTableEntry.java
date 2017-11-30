@@ -11,7 +11,6 @@ public class FileTableEntry
         inode = i;
         iNumber = inumber;
         mode = m;
-        ++inode.count;
         if(mode == FileMode.APPEND || mode == FileMode.READAPPEND)
             seekPtr = inode.length;
     }

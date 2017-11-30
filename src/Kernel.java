@@ -228,7 +228,11 @@ public class Kernel
                 return ERROR;
             case CLOSE:
                 if(param < 0 || param > 31) return ERROR;
-                return fs.close(scheduler.getMyTcb().ftEnt[param]) ? OK : ERROR;
+                {
+                    int ret = fs.close(scheduler.getMyTcb().ftEnt[param]) ? OK : ERROR;
+                    scheduler.getMyTcb().ftEnt[param] = null;
+                    return ret;
+                }
             case SIZE:
                 if(param < 0 || param > 31) return ERROR;
                 return fs.fsize(scheduler.getMyTcb().ftEnt[param]);

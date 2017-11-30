@@ -51,6 +51,7 @@ public class SuperBlock
         setFreeList((short)0, true);
     }
 
+    //set last block to 0xFFFFFF00?
     public short findFirstFreeBlock()
     {
         for(short i = 0; i < 31; ++i) {
@@ -69,6 +70,7 @@ public class SuperBlock
         return -1;
     }
 
+    //why not just keep track of the number of free blocks?
     public boolean areXFreeBlocksUnavailable(int x)
     {
         for(short i = 0; i < 31; ++i) {
