@@ -9,7 +9,7 @@ public class SuperBlock
     public SuperBlock(int diskSize)
     {
         byte[] block = new byte[Disk.blockSize];
-        SysLib.rawread(0, block);
+        SysLib.cread(0, block);
 
         totalBlocks = SysLib.bytes2int(block, 0);
         totalBlocks = diskSize;
@@ -106,6 +106,6 @@ public class SuperBlock
         for(short i = 0; i < 32; ++i)
             SysLib.int2bytes(freeList[i], block, 12 + 4 * i);
 
-        SysLib.rawwrite(0, block);
+        SysLib.cwrite(0, block);
     }
 }

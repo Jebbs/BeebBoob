@@ -18,21 +18,20 @@ public class FileSystem
             diskFormat(64);
 
         directory = new Directory(superBlock.totalInodes);
-
         fileTable = new FileTable(directory);
 
         //directory reconstruction?
         FileTableEntry dirEntry = open("/", "r");
         int dirSize = fsize(dirEntry);
-        if(dirSize>0)
-        {
+
+        if(dirSize>0) {
             byte[] dirData = new byte[dirSize];
             read(dirEntry, dirData);
             directory.bytes2directory(dirData);
         }
+
         close(dirEntry);
     }
-
 
     /**
      * Write all blocks back to the disk?
@@ -254,17 +253,14 @@ public class FileSystem
 
         //reserve blocks
         int neededBlocks = superBlock.totalInodes/inodesPerBlock;
-        for(int i = 0; i < neededBlocks; i++)
-        {
+        for(int i = 0; i < neededBlocks; i++) {
             short block = superBlock.findFirstFreeBlock();
             superBlock.setFreeList(block, true);
         }
 
         //rewrite the inode blocks
         for(short i = 0; i < files; i++)
-        {
             blankInode.toDisk(i);
-        }
 
         //set up first inode to refer to a directory
         Inode dirNode = new Inode();
@@ -284,7 +280,7 @@ public class FileSystem
         for(int i = 0, j = 2; i < name.length; i++, j++)
             directoryBlock[j] = nameInBytes[i];
 
-        SysLib.rawwrite(dirNode.direct[0], directoryBlock);
+        SysLib.cwrite(dirNode.direct[0], directoryBlock);
         superBlock.sync();
         SysLib.csync();
         return true;

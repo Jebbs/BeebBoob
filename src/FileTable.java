@@ -19,21 +19,18 @@ public class FileTable
         // immediately write back this inode to the disk
         // return a reference to this file (structure) table entry
 
-
         //TODO: test for reading is someone is writing
         FileMode fmode = FileMode.parse(mode);
         short iNum = dir.namei(filename);
-        if(iNum < 0 && fmode != FileMode.READ)
-        {
+        if(iNum < 0 && fmode != FileMode.READ) {
             dir.ialloc(filename);
             iNum = dir.namei(filename);
-        }
-        else if(iNum < 0)
+        } else if(iNum < 0) {
             return null;
+        }
 
         Inode node = new Inode(iNum);
-        if(node.flag == 0)
-        {
+        if(node.flag == 0) {
             node.flag = 1;
             node.length = 0;
         }
