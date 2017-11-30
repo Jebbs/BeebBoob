@@ -18,8 +18,23 @@ public class FileTable
         // increment this inode's count
         // immediately write back this inode to the disk
         // return a reference to this file (structure) table entry
-        short thing = -1;
-        return new FileTableEntry(new Inode(), thing, FileMode.parse(mode));
+
+
+        //TODO: test for reading is someone is writing
+        FileMode fmode = FileMode.parse(mode);
+        short iNum = dir.namei(filename);
+        if(iNum < 0 && fmode != FileMode.READ)
+        {
+            dir.ialloc(filename);
+            iNum = dir.namei(filename);
+        }
+        else if(iNum < 0)
+            return null;
+
+        Inode node = new Inode(iNum);
+        node.count++;
+        node.toDisk(iNum);
+        return new FileTableEntry(node, iNum, fmode);
     }
 
     public synchronized boolean ffree(FileTableEntry e)

@@ -4,7 +4,7 @@ public class Directory {
     private static int maxChars = 30; // max characters of each file name
     private static int chunkLength = 32; //sze of a chunk of data on disk
 
-    private FileBlock files[];
+    private FileBlock[] files;
     private int fileCount;
 
     public Directory(int maxInumber) {

@@ -12,6 +12,7 @@ public class SuperBlock
         SysLib.rawread(0, block);
 
         totalBlocks = SysLib.bytes2int(block, 0);
+        totalBlocks = diskSize;
         totalInodes = SysLib.bytes2int(block, 4);
         firstFreeBlock = SysLib.bytes2int(block, 8);
 

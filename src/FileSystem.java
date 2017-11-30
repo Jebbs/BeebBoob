@@ -15,7 +15,7 @@ public class FileSystem
         superBlock = new SuperBlock(diskBlocks);
 
         if(superBlock.totalInodes == 0)
-            diskFormat(72);
+            diskFormat(64);
 
         directory = new Directory(superBlock.totalInodes);
 

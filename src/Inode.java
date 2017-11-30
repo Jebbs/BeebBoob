@@ -28,7 +28,7 @@ public class Inode {
         if(buffer == null)
             buffer = new byte[Disk.blockSize];
 
-        int block = iNumber/FileSystem.inodesPerBlock;
+        int block = (iNumber/FileSystem.inodesPerBlock) +1;
         int offset = iNumber%FileSystem.inodesPerBlock;
 
         SysLib.cread(block, buffer);
@@ -44,7 +44,7 @@ public class Inode {
         if(buffer == null)
             buffer = new byte[Disk.blockSize];
 
-        int block = iNumber/FileSystem.inodesPerBlock;
+        int block = (iNumber/FileSystem.inodesPerBlock) +1;
         int offset = iNumber%FileSystem.inodesPerBlock;
 
         SysLib.cread(block, buffer);
