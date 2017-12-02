@@ -4,6 +4,13 @@ public class Inode {
     public final static int directSize = 11;
     private static byte[] buffer;
 
+    public final static short UNUSED_INODE = 0;
+    public final static short UNOPEN_INODE = 1;
+    public final static short OPEN_INODE_R = 2;
+    public final static short OPEN_INODE_W = 3;
+    public final static short OPEN_INODE_RW = 4;
+    public final static short OPEN_INODE_A = 5;
+
     public int length;
     public short count;
     public short flag;

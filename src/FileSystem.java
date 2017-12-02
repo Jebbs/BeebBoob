@@ -18,7 +18,7 @@ public class FileSystem
             diskFormat(64);
 
         directory = new Directory(superBlock.totalInodes);
-        fileTable = new FileTable(directory);
+        fileTable = new FileTable(directory, superBlock.totalInodes);
 
         //directory reconstruction?
         FileTableEntry dirEntry = open("/", "r");
@@ -69,13 +69,7 @@ public class FileSystem
 
     boolean close(FileTableEntry entry)
     {
-        if(entry == null)
-            return false;
-
-        if(--entry.inode.count == 0)
-            return fileTable.ffree(entry);
-
-        return true;
+        return fileTable.ffree(entry);
     }
 
     int fsize(FileTableEntry entry)
