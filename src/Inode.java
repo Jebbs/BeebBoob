@@ -4,12 +4,13 @@ public class Inode {
     public final static int directSize = 11;
     private static byte[] buffer;
 
-    public final static short UNUSED_INODE = 0;
-    public final static short UNOPEN_INODE = 1;
-    public final static short OPEN_INODE_R = 2;
-    public final static short OPEN_INODE_W = 3;
-    public final static short OPEN_INODE_RW = 4;
-    public final static short OPEN_INODE_A = 5;
+    public final static short UNUSED = 0;
+    public final static short UNOPEN = 1;
+    public final static short OPEN_R = 2;
+    public final static short OPEN_W = 3;
+    public final static short OPEN_RW = 4;
+    public final static short OPEN_A = 5;
+    public final static short DELETE = 6;
 
     public int length;
     public short count;
@@ -26,7 +27,7 @@ public class Inode {
     {
         length = -1;
         count = 0;
-        flag = 0;//think about this
+        flag = UNUSED;
         for(int i = 0; i < directSize; i++)
             direct[i] = -1;
         indirect = -1;

@@ -38,7 +38,7 @@ public class FileSystem
      */
     void sync()
     {
-
+        //not needed due to use of disk cache
     }
 
     /**
@@ -69,6 +69,17 @@ public class FileSystem
 
     boolean close(FileTableEntry entry)
     {
+        if(entry == null)
+            return false;
+
+        synchronized(fileTable){
+            if(--entry.inode.count == 0 &&
+               entry.inode.flag == Inode.DELETE) {
+                //dealoc all blocks associated for file if this is the last one
+                deallocAllBlocks(entry.inode, entry.iNumber);
+            }
+        }
+
         return fileTable.ffree(entry);
     }
 
@@ -210,11 +221,24 @@ public class FileSystem
         entry.toDisk(inum);
     }
 
+    /**
+     * returns false if the file does not exist
+     */
     boolean delete(String filename)
     {
         short i = directory.namei(filename);
-        deallocAllBlocks(new Inode(i), i);
-        return directory.ifree(i);
+        if(i == -1)
+            return false;
+
+        Inode node = new Inode(i);
+        //if markforDeletion returns true, we are ok to delete right away
+        if(fileTable.markForDeletion(i)) {
+            synchronized(fileTable){
+            directory.ifree(i);
+            deallocAllBlocks(node, i);
+            }
+        }
+        return true;
     }
 
     public final int SEEK_SET = 0;
@@ -235,6 +259,7 @@ public class FileSystem
         else if(entry.seekPtr > entry.inode.length)
             entry.seekPtr = entry.inode.length;
 
+        //I think this is actually supposed to return 0 or -1
         return entry.seekPtr;
     }
 

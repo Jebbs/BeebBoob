@@ -35,31 +35,35 @@ public class FileTable
             Inodes[iNum] = new Inode(iNum);
 
             //this is a new file
-            if(Inodes[iNum].flag == Inode.UNUSED_INODE)
+            if(Inodes[iNum].flag == Inode.UNUSED)
             {
-                Inodes[iNum].flag = Inode.UNOPEN_INODE;
+                Inodes[iNum].flag = Inode.UNOPEN;
                 Inodes[iNum].length = 0;
             }
         }
 
         Inode node = Inodes[iNum];
 
-        if(node.flag == Inode.UNOPEN_INODE) {
+        if(node.flag == Inode.UNOPEN) {
 
             //opening a previously unopen file
             if(fmode == FileMode.READ)
-                node.flag = Inode.OPEN_INODE_R;
+                node.flag = Inode.OPEN_R;
             else if(fmode == FileMode.WRITE)
-                node.flag = Inode.OPEN_INODE_W;
+                node.flag = Inode.OPEN_W;
             else if(fmode == FileMode.READWRITE)
-                node.flag = Inode.OPEN_INODE_RW;
+                node.flag = Inode.OPEN_RW;
+            else if(fmode == FileMode.APPEND)
+                node.flag = Inode.OPEN_A;
+
         }
-        else if(node.flag == Inode.OPEN_INODE_R && fmode != FileMode.READ) {
+        else if(node.flag == Inode.OPEN_R && fmode != FileMode.READ) {
             //can't open a file to read when it is open for writing
             return null;
         }
-        else{
+        else{//wrong
             //can't open a file for writing/appending when open for anything else
+            //or this file is marked for deletion
             return null;
         }
 
@@ -80,20 +84,61 @@ public class FileTable
         // free this file table entry.
         // return true if this file table entry found in my table
 
-        if(e == null)
-            return false;
+        if(e.inode.count == 0) {
+            if(e.inode.flag == Inode.DELETE) {
+                dir.ifree(e.iNumber);
+                e.inode.flag = Inode.UNUSED;
+            }
+            else
+                e.inode.flag = Inode.UNOPEN;
 
-        if(--e.inode.count == 0) {
-            e.inode.flag = Inode.UNOPEN_INODE;
             e.inode.toDisk(e.iNumber);
             Inodes[e.iNumber] = null;
         }
-
         //remove this FTE since they are all unique
         table.remove(e);
 
         return true;
     }
+
+    /**
+     * Synchronized way of reducing the inode's use count by one.
+     *
+     * This method returns the current inode count after the reduction.
+     */
+    public synchronized int reduceInodeCount(FileTableEntry e) {
+        return --e.inode.count;
+
+    }
+
+    public synchronized boolean isFileOpen(short iNum) {
+        return (Inodes[iNum] == null)?false:true;
+    }
+
+    /**
+     * This method goes through the process of marking an inode/file for
+     * deletion.
+     *
+     * This method will return true if the file is in a state acceptible for
+     * immediate deletion, otherwise it returns false but marks the file to be
+     * deleted when all references close.
+     *
+     * This method assumes that a file mapped to this inode exists in the
+     * directory.
+     */
+    public synchronized boolean markForDeletion(short iNum) {
+
+        //if the file is currently not open, we are safe to delete it now
+        boolean okForDeletion = (Inodes[iNum] == null)?true:false;
+
+        Inode node = (Inodes[iNum] == null)? new Inode(iNum):Inodes[iNum];
+
+        node.flag = Inode.DELETE;
+
+        return okForDeletion;
+
+    }
+
 
     public synchronized boolean fempty()
     {
