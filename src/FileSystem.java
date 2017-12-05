@@ -34,11 +34,20 @@ public class FileSystem
     }
 
     /**
-     * Write all blocks back to the disk?
+     * Write all blocks back to the disk
      */
     void sync()
     {
-        //not needed due to use of disk cache
+        //we don't need to handle most information here due to the use of the
+        //disk cache.
+
+        byte[] dir = directory.directory2bytes();
+        FileTableEntry dirEntry = open("/", "w");
+        write(dirEntry, dir);
+        close(dirEntry);
+
+        //finish with making sure the disk cache is written back
+        SysLib.csync();
     }
 
     /**
@@ -46,11 +55,17 @@ public class FileSystem
      */
     boolean format(int files)
     {
-        if(!diskFormat(files))
-            return false;
+        boolean ret;
+        synchronized(fileTable)
+        {
+            //if there are no open files, then we can do stuff
+            if(ret = fileTable.fempty()) {
+                SysLib.flush();
+                diskFormat(files);
+            }
+        }
 
-        //do some other stuff here later
-        return true;
+        return ret;
     }
 
     FileTableEntry open(String filename, String mode)

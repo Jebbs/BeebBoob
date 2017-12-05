@@ -84,6 +84,7 @@ public class Directory
             if (files[i].length == 0) {
                 files[i].length = filename.length();
                 filename.getChars(0, files[i].length, files[i].filename, 0);
+                ++fileCount;
                 return (short) i;
             }
         }
@@ -103,6 +104,7 @@ public class Directory
             return false;
 
         files[iNumber].length = 0;
+        --fileCount;
         return true;
     }
 

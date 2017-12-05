@@ -140,7 +140,12 @@ public class FileTable
     }
 
 
-    public synchronized boolean fempty()
+    /**
+     * This method assumes that the caller has the file system in a synchronized
+     * block. This assumption is made so that the user can keep the file table
+     * locked while other operations are happening if it is currently empty.
+     */
+    public boolean fempty()
     {
         return table.isEmpty();
     }
