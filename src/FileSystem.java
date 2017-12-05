@@ -8,6 +8,7 @@ public class FileSystem
     private SuperBlock superBlock;
     private Directory directory;
     private FileTable fileTable;
+    public boolean skipSync;
 
     public FileSystem(int diskBlocks)
     {
@@ -31,6 +32,8 @@ public class FileSystem
         }
 
         close(dirEntry);
+
+        skipSync = false;
     }
 
     /**
@@ -38,9 +41,13 @@ public class FileSystem
      */
     void sync()
     {
+        //prevents an infinite recursive loop caused by csync and flush
+        if(skipSync)
+            return;
+        skipSync = true;
+
         //we don't need to handle most information here due to the use of the
         //disk cache.
-
         byte[] dir = directory.directory2bytes();
         FileTableEntry dirEntry = open("/", "w");
         write(dirEntry, dir);
@@ -58,11 +65,15 @@ public class FileSystem
         boolean ret;
         synchronized(fileTable)
         {
+            skipSync = true;
+
             //if there are no open files, then we can do stuff
             if(ret = fileTable.fempty()) {
                 SysLib.flush();
                 diskFormat(files);
             }
+
+            skipSync = false;
         }
 
         return ret;
